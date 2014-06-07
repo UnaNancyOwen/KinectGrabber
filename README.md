@@ -1,8 +1,8 @@
 ﻿KinectGrabber
 =============
 
-KinectGrabber is Grabber of PCL(Point Cloud Library) to retrieve the point cloud data from Kinect using Kinect for Windows SDK. 
-This Grabber only depend on Kinect for Windows SDK. 
+KinectGrabber is Grabber of PCL(Point Cloud Library) to retrieve the point cloud data from Kinect using Kinect for Windows SDK.  
+This Grabber only depend on Kinect for Windows SDK.  
 
 
 Environment
@@ -11,9 +11,9 @@ Environment
 * Kinect for Windows SDK v1.8
 * Visual Studio 2013 Express for Windows Desktop
 
-<sup>You can download PreBuild Binary of PCL from the following page.</sup> 
-<sup>Building Point Cloud Library with Visual Studio 2013 | Summary?Blog</sup> 
-<sup><http://unanancyowen.com/?p=712#Download></sup>
+<sup>You can download PreBuild Binary of PCL from the following page.</sup>  
+<sup>Building Point Cloud Library with Visual Studio 2013 | Summary?Blog</sup>  
+<sup><http://unanancyowen.com/?p=712#Download></sup>  
 
 
 Contact
@@ -26,8 +26,8 @@ Contact
 
 References
 ----------
-* openni_grabber | Point Cloud Library
+* openni_grabber | Point Cloud Library  
   <https://github.com/PointCloudLibrary>
 
-* NaturalSoftware.Kinect.PCL | Natural Software
+* NaturalSoftware.Kinect.PCL | Natural Software  
   <https://github.com/NaturalSoftwareJP/NaturalSoftware.Kinect.Cpp>

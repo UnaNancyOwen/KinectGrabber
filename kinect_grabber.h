@@ -49,9 +49,7 @@ namespace pcl
 			HRESULT result;
 			INuiSensor* sensor;
 			INuiCoordinateMapper* mapper;
-			HANDLE colorEvent;
 			HANDLE colorHandle;
-			HANDLE depthEvent;
 			HANDLE depthHandle;
 
 			int width;
@@ -62,9 +60,7 @@ namespace pcl
 		: sensor( nullptr )
 		, mapper( nullptr )
 		, result( S_OK )
-		, colorEvent( INVALID_HANDLE_VALUE )
 		, colorHandle( INVALID_HANDLE_VALUE )
-		, depthEvent( INVALID_HANDLE_VALUE )
 		, depthHandle( INVALID_HANDLE_VALUE )
 		, width( 640 )
 		, height( 480 )
@@ -124,24 +120,19 @@ namespace pcl
 		sensor->NuiShutdown();
 		mapper->Release();
 
-		CloseHandle( colorEvent );
-		CloseHandle( depthEvent );
-
 		thread.join();
 	}
 
 	void pcl::KinectGrabber::start()
 	{
 		//  Open Color Stream
-		colorEvent = CreateEvent( nullptr, true, false, nullptr );
-		result = sensor->NuiImageStreamOpen( NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480, 0, 2, colorEvent, &colorHandle );
+		result = sensor->NuiImageStreamOpen( NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480, 0, 2, 0, &colorHandle );
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : INuiSensor::NuiImageStreamOpen( Color )" );
 		}
 
 		// Open Depth Stream
-		depthEvent = CreateEvent( nullptr, true, false, nullptr );
-		result = sensor->NuiImageStreamOpen( NUI_IMAGE_TYPE_DEPTH_AND_PLAYER_INDEX, NUI_IMAGE_RESOLUTION_640x480, 0, 2, depthEvent, &depthHandle );
+		result = sensor->NuiImageStreamOpen( NUI_IMAGE_TYPE_DEPTH_AND_PLAYER_INDEX, NUI_IMAGE_RESOLUTION_640x480, 0, 2, 0, &depthHandle );
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : INuiSensor::NuiImageStreamOpen( Depth )" );
 		}

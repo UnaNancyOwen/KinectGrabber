@@ -114,6 +114,7 @@ namespace pcl
 	{
 		stop();
 
+		disconnect_all_slots<signal_Kinect_PointXYZ>();
 		disconnect_all_slots<signal_Kinect_PointXYZRGB>();
 
 		// End Processing

@@ -41,7 +41,7 @@ namespace pcl
 			boost::thread thread;
 			mutable boost::mutex mutex;
 
-			void ThreadFunction();
+			void threadFunction();
 
 			bool quit;
 			bool running;
@@ -148,7 +148,7 @@ namespace pcl
 
 		running = true;
 
-		thread = boost::thread( &KinectGrabber::ThreadFunction, this );
+		thread = boost::thread( &KinectGrabber::threadFunction, this );
 	}
 
 	void pcl::KinectGrabber::stop()
@@ -178,7 +178,7 @@ namespace pcl
 		return 30.0f;
 	}
 
-	void pcl::KinectGrabber::ThreadFunction()
+	void pcl::KinectGrabber::threadFunction()
 	{
 		while( !quit ){
 			boost::unique_lock<boost::mutex> lock( mutex );

@@ -70,8 +70,8 @@ namespace pcl
 		, height( 480 )
 		, running( false )
 		, quit( false )
-		, signal_PointXYZ()
-		, signal_PointXYZRGB()
+		, signal_PointXYZ( nullptr )
+		, signal_PointXYZRGB( nullptr )
 	{
 		// Retrieved Sensor Count that is Connected to PC 
 		int count = 0;

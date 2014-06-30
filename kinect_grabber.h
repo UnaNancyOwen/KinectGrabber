@@ -1,6 +1,9 @@
 // KinectGrabber is pcl::Grabber to retrieve the point cloud data from Kinect using Kinect for Windows SDK.
 // This source code is licensed under the MIT license. Please see the License in License.txt.
 
+#ifndef KINECT_GRABBER
+#define KINECT_GRABBER
+
 #define NOMINMAX
 #include <Windows.h>
 #include <NuiApi.h>
@@ -299,4 +302,6 @@ namespace pcl
 		return cloud;
 	}
 }
+
+#endif KINECT_GRABBER
 

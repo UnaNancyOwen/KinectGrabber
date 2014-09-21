@@ -16,8 +16,8 @@ Environment
 <sup><http://unanancyowen.com/?p=712#Download></sup>  
 
 
-ライセンス
-----------
+License
+-------
 Copyright &copy; 2014 Tsukasa SUGIURA  
 Distributed under the [MIT License](http://www.opensource.org/licenses/mit-license.php "MIT License | Open Source Initiative").  
 

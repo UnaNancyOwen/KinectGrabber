@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "kinect_grabber.h"
+#include "kinect2_grabber.h"
 #include <pcl/visualization/cloud_viewer.h>
 
 
@@ -19,8 +19,8 @@ int _tmain( int argc, _TCHAR* argv[] )
 		}
 	};
 
-	// Create KinectGrabber
-	pcl::Grabber* grabber = new pcl::KinectGrabber();
+	// Create Kinect2Grabber
+	pcl::Grabber* grabber = new pcl::Kinect2Grabber();
 
 	// Regist Callback Function
 	grabber->registerCallback( function );

@@ -1,4 +1,4 @@
-KinectGrabber License
+Kinect2Grabber License
  
 The MIT License
 

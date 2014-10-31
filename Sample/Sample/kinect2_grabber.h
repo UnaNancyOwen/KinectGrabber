@@ -195,7 +195,7 @@ namespace pcl
 
 	void pcl::Kinect2Grabber::start()
 	{
-		//  Open Color Frame Reader
+		// Open Color Frame Reader
 		result = colorSource->OpenReader( &colorReader );
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : IColorFrameSource::OpenReader()" );

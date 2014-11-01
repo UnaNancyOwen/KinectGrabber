@@ -153,12 +153,12 @@ namespace pcl
 			throw std::exception( "Exception : IDepthFrameSource::get_FrameDescription()" );
 		}
 
-		result = depthDescription->get_Width( &depthWidth ); // 1920
+		result = depthDescription->get_Width( &depthWidth ); // 512
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : IFrameDescription::get_Width()" );
 		}
 
-		result = depthDescription->get_Height( &depthHeight ); // 1080
+		result = depthDescription->get_Height( &depthHeight ); // 424
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : IFrameDescription::get_Height()" );
 		}

@@ -5,7 +5,7 @@
   
   <!-- User Macros -->
   <PropertyGroup Label="UserMacros">
-    <PCL_ROOT Condition="'$(Platform)'=='Win32'">$(ProgramFIles)\PCL 1.7.2</PCL_ROOT>
+    <PCL_ROOT Condition="'$(Platform)'=='Win32'">$(ProgramFiles)\PCL 1.7.2</PCL_ROOT>
     <PCL_ROOT Condition="'$(Platform)'=='x64'">$(ProgramW6432)\PCL 1.7.2</PCL_ROOT>
   </PropertyGroup>
 

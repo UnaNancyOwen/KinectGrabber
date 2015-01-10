@@ -1,7 +1,13 @@
-// Sample.cpp : コンソール アプリケーションのエントリ ポイントを定義します。
+// Sample.cpp : 繧ｳ繝ｳ繧ｽ繝ｼ繝ｫ 繧｢繝励Μ繧ｱ繝ｼ繧ｷ繝ｧ繝ｳ縺ｮ繧ｨ繝ｳ繝医Μ 繝昴う繝ｳ繝医ｒ螳夂ｾｩ縺励∪縺吶�
 //
 
 #include "stdafx.h"
+
+// Disable Error C4996 that occur when using Boost.Signals2.
+#ifdef _DEBUG
+	#define _SCL_SECURE_NO_WARNINGS
+#endif
+
 #include "kinect2_grabber.h"
 #include <pcl/visualization/cloud_viewer.h>
 

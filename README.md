@@ -1,7 +1,7 @@
 ﻿Kinect2Grabber
 ==============
 
-<img src="//img.shields.io/gratipay/TsukasaSugiura.svg">  
+<img src="http://img.shields.io/gratipay/TsukasaSugiura.svg">  
 
 Kinect2Grabber is Grabber of PCL(Point Cloud Library) to retrieve the point cloud data from Kinect v2 using Kinect for Windows SDK v2.x.  
 This Grabber only depend on Kinect for Windows SDK v2.x.  

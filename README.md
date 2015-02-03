@@ -1,6 +1,8 @@
 ﻿KinectGrabber
 =============
 
+[![Gittip](http://img.shields.io/gratipay/TsukasaSugiura.svg)](https://gratipay.com/TsukasaSugiura/)  
+
 KinectGrabber is Grabber of PCL(Point Cloud Library) to retrieve the point cloud data from Kinect v1 using Kinect for Windows SDK v1.x.  
 This Grabber only depend on Kinect for Windows SDK v1.x.  
 

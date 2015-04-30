@@ -324,7 +324,7 @@ namespace pcl
 
 		pcl::PointXYZRGB* pt = &cloud->points[0];
 		for( int y = 0; y < depthHeight; y++ ){
-			for( int x = 0; x < depthWidth; x++ ){
+			for( int x = 0; x < depthWidth; x++, pt++ ){
 				pcl::PointXYZRGB point;
 
 				DepthSpacePoint depthSpacePoint = { static_cast<float>( x ), static_cast<float>( y ) };

@@ -288,8 +288,11 @@ namespace pcl
 		cloud->height = static_cast<uint32_t>( depthHeight );
 		cloud->is_dense = false;
 
+		cloud->points.resize( cloud->height * cloud->width );
+
+		pcl::PointXYZ* pt = &cloud->points[0];
 		for( int y = 0; y < depthHeight; y++ ){
-			for( int x = 0; x < depthWidth; x++ ){
+			for( int x = 0; x < depthWidth; x++, pt++ ){
 				pcl::PointXYZ point;
 
 				DepthSpacePoint depthSpacePoint = { static_cast<float>( x ), static_cast<float>( y ) };
@@ -302,7 +305,7 @@ namespace pcl
 				point.y = cameraSpacePoint.Y;
 				point.z = cameraSpacePoint.Z;
 
-				cloud->push_back( point );
+				*pt = point;
 			}
 		}
 
@@ -317,6 +320,9 @@ namespace pcl
 		cloud->height = static_cast<uint32_t>( depthHeight );
 		cloud->is_dense = false;
 
+		cloud->points.resize( cloud->height * cloud->width );
+
+		pcl::PointXYZRGB* pt = &cloud->points[0];
 		for( int y = 0; y < depthHeight; y++ ){
 			for( int x = 0; x < depthWidth; x++ ){
 				pcl::PointXYZRGB point;
@@ -345,7 +351,7 @@ namespace pcl
 					point.z = cameraSpacePoint.Z;
 				}
 
-				cloud->push_back( point );
+				*pt = point;
 			}
 		}
 

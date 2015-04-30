@@ -231,10 +231,12 @@ namespace pcl
 		cloud->height = static_cast<uint32_t>( height );
 		cloud->is_dense = false;
 
-		NUI_DEPTH_IMAGE_PIXEL* depthPixel = reinterpret_cast<NUI_DEPTH_IMAGE_PIXEL*>( depthLockedRect->pBits );
+		cloud->points.resize( cloud->height * cloud->width );
 
+		NUI_DEPTH_IMAGE_PIXEL* depthPixel = reinterpret_cast<NUI_DEPTH_IMAGE_PIXEL*>( depthLockedRect->pBits );
+		pcl::PointXYZ* pt = &cloud->points[0];
 		for( int y = 0; y < height; y++ ){
-			for( int x = 0; x < width; x++ ){
+			for( int x = 0; x < width; x++, pt++ ){
 				pcl::PointXYZ point;
 
 				NUI_DEPTH_IMAGE_POINT depthPoint;
@@ -250,7 +252,7 @@ namespace pcl
 				point.y = skeletonPoint.y;
 				point.z = skeletonPoint.z;
 
-				cloud->push_back( point );
+				*pt = point;
 			}
 		}
 
@@ -265,10 +267,12 @@ namespace pcl
 		cloud->height = static_cast<uint32_t>( height );
 		cloud->is_dense = false;
 
-		NUI_DEPTH_IMAGE_PIXEL* depthPixel = reinterpret_cast<NUI_DEPTH_IMAGE_PIXEL*>( depthLockedRect->pBits );
+		cloud->points.resize( cloud->height * cloud->width );
 
+		NUI_DEPTH_IMAGE_PIXEL* depthPixel = reinterpret_cast<NUI_DEPTH_IMAGE_PIXEL*>( depthLockedRect->pBits );
+		pcl::PointXYZRGB* pt = &cloud->points[0];
 		for( int y = 0; y < height; y++ ){
-			for( int x = 0; x < width; x++ ){
+			for( int x = 0; x < width; x++, pt++ ){
 				pcl::PointXYZRGB point;
 
 				NUI_DEPTH_IMAGE_POINT depthPoint;
@@ -295,7 +299,7 @@ namespace pcl
 					point.r = colorLockedRect->pBits[index + 2];
 				}
 
-				cloud->push_back( point );
+				*pt = point;
 			}
 		}
 

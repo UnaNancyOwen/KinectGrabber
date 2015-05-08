@@ -15,6 +15,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(PCL_ROOT)\include\pcl-1.7;$(PCL_ROOT)\3rdParty\Boost\include\boost-1_57;$(PCL_ROOT)\3rdParty\Eigen\eigen3;$(PCL_ROOT)\3rdParty\FLANN\include;$(PCL_ROOT)\3rdParty\QHull\include;$(PCL_ROOT)\3rdParty\VTK\include\vtk-6.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(PCL_ROOT)\lib;$(PCL_ROOT)\3rdParty\Boost\lib;$(PCL_ROOT)\3rdParty\FLANN\lib;$(PCL_ROOT)\3rdParty\QHull\lib;$(PCL_ROOT)\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -29,6 +30,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(PCL_ROOT)\include\pcl-1.7;$(PCL_ROOT)\3rdParty\Boost\include\boost-1_57;$(PCL_ROOT)\3rdParty\Eigen\eigen3;$(PCL_ROOT)\3rdParty\FLANN\include;$(PCL_ROOT)\3rdParty\QHull\include;$(PCL_ROOT)\3rdParty\VTK\include\vtk-6.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(PCL_ROOT)\lib;$(PCL_ROOT)\3rdParty\Boost\lib;$(PCL_ROOT)\3rdParty\FLANN\lib;$(PCL_ROOT)\3rdParty\QHull\lib;$(PCL_ROOT)\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -43,6 +45,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(PCL_ROOT)\include\pcl-1.7;$(PCL_ROOT)\3rdParty\Boost\include\boost-1_57;$(PCL_ROOT)\3rdParty\Eigen\eigen3;$(PCL_ROOT)\3rdParty\FLANN\include;$(PCL_ROOT)\3rdParty\QHull\include;$(PCL_ROOT)\3rdParty\VTK\include\vtk-6.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(PCL_ROOT)\lib;$(PCL_ROOT)\3rdParty\Boost\lib;$(PCL_ROOT)\3rdParty\FLANN\lib;$(PCL_ROOT)\3rdParty\QHull\lib;$(PCL_ROOT)\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -57,6 +60,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(PCL_ROOT)\include\pcl-1.7;$(PCL_ROOT)\3rdParty\Boost\include\boost-1_57;$(PCL_ROOT)\3rdParty\Eigen\eigen3;$(PCL_ROOT)\3rdParty\FLANN\include;$(PCL_ROOT)\3rdParty\QHull\include;$(PCL_ROOT)\3rdParty\VTK\include\vtk-6.2;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(PCL_ROOT)\lib;$(PCL_ROOT)\3rdParty\Boost\lib;$(PCL_ROOT)\3rdParty\FLANN\lib;$(PCL_ROOT)\3rdParty\QHull\lib;$(PCL_ROOT)\3rdParty\VTK\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

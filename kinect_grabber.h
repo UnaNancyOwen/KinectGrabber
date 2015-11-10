@@ -18,6 +18,7 @@ namespace pcl
 {
 	struct pcl::PointXYZ;
 	struct pcl::PointXYZRGB;
+	struct pcl::PointXYZRGBA;
 	template <typename T> class pcl::PointCloud;
 
 	class KinectGrabber : public pcl::Grabber
@@ -33,13 +34,16 @@ namespace pcl
 
 			typedef void ( signal_Kinect_PointXYZ )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZ>>& );
 			typedef void ( signal_Kinect_PointXYZRGB )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGB>>& );
+			typedef void ( signal_Kinect_PointXYZRGBA )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGBA>>& );
 
 		protected:
 			boost::signals2::signal<signal_Kinect_PointXYZ>* signal_PointXYZ;
 			boost::signals2::signal<signal_Kinect_PointXYZRGB>* signal_PointXYZRGB;
+			boost::signals2::signal<signal_Kinect_PointXYZRGBA>* signal_PointXYZRGBA;
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr convertDepthToPointXYZ( NUI_LOCKED_RECT* depthLockedRect );
 			pcl::PointCloud<pcl::PointXYZRGB>::Ptr convertRGBDepthToPointXYZRGB( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect );
+			pcl::PointCloud<pcl::PointXYZRGBA>::Ptr convertRGBADepthToPointXYZRGBA( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect );
 
 			boost::thread thread;
 			mutable boost::mutex mutex;
@@ -71,6 +75,7 @@ namespace pcl
 		, quit( false )
 		, signal_PointXYZ( nullptr )
 		, signal_PointXYZRGB( nullptr )
+		, signal_PointXYZRGBA( nullptr )
 	{
 		// Retrieved Sensor Count that is Connected to PC 
 		int count = 0;
@@ -111,6 +116,7 @@ namespace pcl
 
 		signal_PointXYZ = createSignal<signal_Kinect_PointXYZ>();
 		signal_PointXYZRGB = createSignal<signal_Kinect_PointXYZRGB>();
+		signal_PointXYZRGBA = createSignal<signal_Kinect_PointXYZRGBA>();
 	}
 
 	pcl::KinectGrabber::~KinectGrabber() throw( )
@@ -119,6 +125,7 @@ namespace pcl
 
 		disconnect_all_slots<signal_Kinect_PointXYZ>();
 		disconnect_all_slots<signal_Kinect_PointXYZRGB>();
+		disconnect_all_slots<signal_Kinect_PointXYZRGBA>();
 
 		// End Processing
 		sensor->NuiShutdown();
@@ -220,6 +227,10 @@ namespace pcl
 			if( signal_PointXYZRGB->num_slots() > 0 ) {
 				signal_PointXYZRGB->operator()( convertRGBDepthToPointXYZRGB( &colorLockedRect, &depthLockedRect ) );
 			}
+
+			if( signal_PointXYZRGBA->num_slots() > 0 ) {
+				signal_PointXYZRGBA->operator()( convertRGBADepthToPointXYZRGBA( &colorLockedRect, &depthLockedRect ) );
+			}
 		}
 	}
 
@@ -297,6 +308,54 @@ namespace pcl
 					point.b = colorLockedRect->pBits[index + 0];
 					point.g = colorLockedRect->pBits[index + 1];
 					point.r = colorLockedRect->pBits[index + 2];
+				}
+
+				*pt = point;
+			}
+		}
+
+		return cloud;
+	}
+
+	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr pcl::KinectGrabber::convertRGBADepthToPointXYZRGBA( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect )
+	{
+		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGBA>() );
+
+		cloud->width = static_cast<uint32_t>( width );
+		cloud->height = static_cast<uint32_t>( height );
+		cloud->is_dense = false;
+
+		cloud->points.resize( cloud->height * cloud->width );
+
+		NUI_DEPTH_IMAGE_PIXEL* depthPixel = reinterpret_cast<NUI_DEPTH_IMAGE_PIXEL*>( depthLockedRect->pBits );
+		pcl::PointXYZRGBA* pt = &cloud->points[0];
+		for( int y = 0; y < height; y++ ){
+			for( int x = 0; x < width; x++, pt++ ){
+				pcl::PointXYZRGBA point;
+
+				NUI_DEPTH_IMAGE_POINT depthPoint;
+				depthPoint.x = x;
+				depthPoint.y = y;
+				depthPoint.depth = depthPixel[y * width + x].depth;
+
+				// Coordinate Mapping Depth to Real Space, and Setting PointCloud XYZ
+				Vector4 skeletonPoint;
+				mapper->MapDepthPointToSkeletonPoint( NUI_IMAGE_RESOLUTION_640x480, &depthPoint, &skeletonPoint );
+
+				point.x = skeletonPoint.x;
+				point.y = skeletonPoint.y;
+				point.z = skeletonPoint.z;
+
+				// Coordinate Mapping Depth to Color Space, and Setting PointCloud RGBA
+				NUI_COLOR_IMAGE_POINT colorPoint;
+				mapper->MapDepthPointToColorPoint( NUI_IMAGE_RESOLUTION_640x480, &depthPoint, NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480, &colorPoint );
+
+				if( 0 <= colorPoint.x && colorPoint.x < width && 0 <= colorPoint.y && colorPoint.y < height ){
+					unsigned int index = colorPoint.y * colorLockedRect->Pitch + colorPoint.x * 4;
+					point.b = colorLockedRect->pBits[index + 0];
+					point.g = colorLockedRect->pBits[index + 1];
+					point.r = colorLockedRect->pBits[index + 2];
+					point.a = colorLockedRect->pBits[index + 3];
 				}
 
 				*pt = point;

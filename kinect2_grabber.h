@@ -97,6 +97,7 @@ namespace pcl
 		, quit( false )
 		, signal_PointXYZ( nullptr )
 		, signal_PointXYZRGB( nullptr )
+		, signal_PointXYZRGBA( nullptr )
 	{
 		// Create Sensor Instance
 		result = GetDefaultKinectSensor( &sensor );
@@ -386,7 +387,7 @@ namespace pcl
 				DepthSpacePoint depthSpacePoint = { static_cast<float>( x ), static_cast<float>( y ) };
 				UINT16 depth = depthBuffer[y * depthWidth + x];
 
-				// Coordinate Mapping Depth to Color Space, and Setting PointCloud RGB
+				// Coordinate Mapping Depth to Color Space, and Setting PointCloud RGBA
 				ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
 				mapper->MapDepthPointToColorSpace( depthSpacePoint, depth, &colorSpacePoint );
 				int colorX = static_cast<int>( std::floor( colorSpacePoint.X + 0.5f ) );

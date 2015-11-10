@@ -18,6 +18,7 @@ namespace pcl
 {
 	struct pcl::PointXYZ;
 	struct pcl::PointXYZRGB;
+	struct pcl::PointXYZRGBA;
 	template <typename T> class pcl::PointCloud;
 
 	template<class Interface>
@@ -42,13 +43,16 @@ namespace pcl
 
 			typedef void ( signal_Kinect2_PointXYZ )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZ>>& );
 			typedef void ( signal_Kinect2_PointXYZRGB )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGB>>& );
+			typedef void ( signal_Kinect2_PointXYZRGBA )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGBA>>& );
 
 		protected:
 			boost::signals2::signal<signal_Kinect2_PointXYZ>* signal_PointXYZ;
 			boost::signals2::signal<signal_Kinect2_PointXYZRGB>* signal_PointXYZRGB;
+			boost::signals2::signal<signal_Kinect2_PointXYZRGBA>* signal_PointXYZRGBA;
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr convertDepthToPointXYZ( UINT16* depthBuffer );
 			pcl::PointCloud<pcl::PointXYZRGB>::Ptr convertRGBDepthToPointXYZRGB( RGBQUAD* colorBuffer, UINT16* depthBuffer );
+			pcl::PointCloud<pcl::PointXYZRGBA>::Ptr convertRGBADepthToPointXYZRGBA( RGBQUAD* colorBuffer, UINT16* depthBuffer );
 
 			boost::thread thread;
 			mutable boost::mutex mutex;
@@ -170,6 +174,7 @@ namespace pcl
 
 		signal_PointXYZ = createSignal<signal_Kinect2_PointXYZ>();
 		signal_PointXYZRGB = createSignal<signal_Kinect2_PointXYZRGB>();
+		signal_PointXYZRGBA = createSignal<signal_Kinect2_PointXYZRGBA>();
 	}
 
 	pcl::Kinect2Grabber::~Kinect2Grabber() throw( )
@@ -178,6 +183,7 @@ namespace pcl
 
 		disconnect_all_slots<signal_Kinect2_PointXYZ>();
 		disconnect_all_slots<signal_Kinect2_PointXYZRGB>();
+		disconnect_all_slots<signal_Kinect2_PointXYZRGBA>();
 
 		// End Processing
 		if( sensor ){
@@ -277,6 +283,10 @@ namespace pcl
 			if( signal_PointXYZRGB->num_slots() > 0 ) {
 				signal_PointXYZRGB->operator()( convertRGBDepthToPointXYZRGB( &colorBuffer[0], &depthBuffer[0] ) );
 			}
+
+			if( signal_PointXYZRGBA->num_slots() > 0 ) {
+				signal_PointXYZRGBA->operator()( convertRGBADepthToPointXYZRGBA( &colorBuffer[0], &depthBuffer[0] ) );
+			}
 		}
 	}
 
@@ -340,6 +350,53 @@ namespace pcl
 					point.b = color.rgbBlue;
 					point.g = color.rgbGreen;
 					point.r = color.rgbRed;
+				}
+
+				// Coordinate Mapping Depth to Camera Space, and Setting PointCloud XYZ
+				CameraSpacePoint cameraSpacePoint = { 0.0f, 0.0f, 0.0f };
+				mapper->MapDepthPointToCameraSpace( depthSpacePoint, depth, &cameraSpacePoint );
+				if( ( 0 <= colorX ) && ( colorX < colorWidth ) && ( 0 <= colorY ) && ( colorY < colorHeight ) ){
+					point.x = cameraSpacePoint.X;
+					point.y = cameraSpacePoint.Y;
+					point.z = cameraSpacePoint.Z;
+				}
+
+				*pt = point;
+			}
+		}
+
+		return cloud;
+	}
+
+	pcl::PointCloud<pcl::PointXYZRGBA>::Ptr pcl::Kinect2Grabber::convertRGBADepthToPointXYZRGBA( RGBQUAD* colorBuffer, UINT16* depthBuffer )
+	{
+		pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGBA>() );
+
+		cloud->width = static_cast<uint32_t>( depthWidth );
+		cloud->height = static_cast<uint32_t>( depthHeight );
+		cloud->is_dense = false;
+
+		cloud->points.resize( cloud->height * cloud->width );
+
+		pcl::PointXYZRGBA* pt = &cloud->points[0];
+		for( int y = 0; y < depthHeight; y++ ){
+			for( int x = 0; x < depthWidth; x++, pt++ ){
+				pcl::PointXYZRGBA point;
+
+				DepthSpacePoint depthSpacePoint = { static_cast<float>( x ), static_cast<float>( y ) };
+				UINT16 depth = depthBuffer[y * depthWidth + x];
+
+				// Coordinate Mapping Depth to Color Space, and Setting PointCloud RGB
+				ColorSpacePoint colorSpacePoint = { 0.0f, 0.0f };
+				mapper->MapDepthPointToColorSpace( depthSpacePoint, depth, &colorSpacePoint );
+				int colorX = static_cast<int>( std::floor( colorSpacePoint.X + 0.5f ) );
+				int colorY = static_cast<int>( std::floor( colorSpacePoint.Y + 0.5f ) );
+				if( ( 0 <= colorX ) && ( colorX < colorWidth ) && ( 0 <= colorY ) && ( colorY < colorHeight ) ){
+					RGBQUAD color = colorBuffer[colorY * colorWidth + colorX];
+					point.b = color.rgbBlue;
+					point.g = color.rgbGreen;
+					point.r = color.rgbRed;
+					point.a = color.rgbReserved;
 				}
 
 				// Coordinate Mapping Depth to Camera Space, and Setting PointCloud XYZ

@@ -17,6 +17,7 @@
 namespace pcl
 {
 	struct pcl::PointXYZ;
+	struct pcl::PointXYZI;
 	struct pcl::PointXYZRGB;
 	struct pcl::PointXYZRGBA;
 	template <typename T> class pcl::PointCloud;
@@ -33,15 +34,18 @@ namespace pcl
 			virtual float getFramesPerSecond() const;
 
 			typedef void ( signal_Kinect_PointXYZ )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZ>>& );
+			typedef void ( signal_Kinect_PointXYZI )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>>& );
 			typedef void ( signal_Kinect_PointXYZRGB )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGB>>& );
 			typedef void ( signal_Kinect_PointXYZRGBA )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGBA>>& );
 
 		protected:
 			boost::signals2::signal<signal_Kinect_PointXYZ>* signal_PointXYZ;
+			boost::signals2::signal<signal_Kinect_PointXYZI>* signal_PointXYZI;
 			boost::signals2::signal<signal_Kinect_PointXYZRGB>* signal_PointXYZRGB;
 			boost::signals2::signal<signal_Kinect_PointXYZRGBA>* signal_PointXYZRGBA;
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr convertDepthToPointXYZ( NUI_LOCKED_RECT* depthLockedRect );
+			pcl::PointCloud<pcl::PointXYZI>::Ptr convertInfraredDepthToPointXYZI( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect );
 			pcl::PointCloud<pcl::PointXYZRGB>::Ptr convertRGBDepthToPointXYZRGB( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect );
 			pcl::PointCloud<pcl::PointXYZRGBA>::Ptr convertRGBADepthToPointXYZRGBA( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect );
 
@@ -74,6 +78,7 @@ namespace pcl
 		, running( false )
 		, quit( false )
 		, signal_PointXYZ( nullptr )
+		, signal_PointXYZI( nullptr )
 		, signal_PointXYZRGB( nullptr )
 		, signal_PointXYZRGBA( nullptr )
 	{
@@ -115,6 +120,7 @@ namespace pcl
 		height = static_cast<int>( refHeight );
 
 		signal_PointXYZ = createSignal<signal_Kinect_PointXYZ>();
+		signal_PointXYZI = createSignal<signal_Kinect_PointXYZI>();
 		signal_PointXYZRGB = createSignal<signal_Kinect_PointXYZRGB>();
 		signal_PointXYZRGBA = createSignal<signal_Kinect_PointXYZRGBA>();
 	}
@@ -124,6 +130,7 @@ namespace pcl
 		stop();
 
 		disconnect_all_slots<signal_Kinect_PointXYZ>();
+		disconnect_all_slots<signal_Kinect_PointXYZI>();
 		disconnect_all_slots<signal_Kinect_PointXYZRGB>();
 		disconnect_all_slots<signal_Kinect_PointXYZRGBA>();
 
@@ -137,7 +144,8 @@ namespace pcl
 	void pcl::KinectGrabber::start()
 	{
 		//  Open Color Stream
-		result = sensor->NuiImageStreamOpen( NUI_IMAGE_TYPE_COLOR, NUI_IMAGE_RESOLUTION_640x480, 0, 2, 0, &colorHandle );
+		NUI_IMAGE_TYPE type = ( signal_PointXYZI->num_slots() <= 0 ) ? NUI_IMAGE_TYPE_COLOR : NUI_IMAGE_TYPE_COLOR_INFRARED;
+		result = sensor->NuiImageStreamOpen( type, NUI_IMAGE_RESOLUTION_640x480, 0, 2, 0, &colorHandle );
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : INuiSensor::NuiImageStreamOpen( Color )" );
 		}
@@ -224,6 +232,10 @@ namespace pcl
 				signal_PointXYZ->operator()( convertDepthToPointXYZ( &depthLockedRect ) );
 			}
 
+			if( signal_PointXYZI->num_slots() > 0 ) {
+				signal_PointXYZI->operator()( convertInfraredDepthToPointXYZI( &colorLockedRect, &depthLockedRect ) );
+			}
+
 			if( signal_PointXYZRGB->num_slots() > 0 ) {
 				signal_PointXYZRGB->operator()( convertRGBDepthToPointXYZRGB( &colorLockedRect, &depthLockedRect ) );
 			}
@@ -254,6 +266,45 @@ namespace pcl
 				depthPoint.x = x;
 				depthPoint.y = y;
 				depthPoint.depth = depthPixel[y * width + x].depth;
+
+				// Coordinate Mapping Depth to Real Space, and Setting PointCloud XYZ
+				Vector4 skeletonPoint;
+				mapper->MapDepthPointToSkeletonPoint( NUI_IMAGE_RESOLUTION_640x480, &depthPoint, &skeletonPoint );
+
+				point.x = skeletonPoint.x;
+				point.y = skeletonPoint.y;
+				point.z = skeletonPoint.z;
+
+				*pt = point;
+			}
+		}
+
+		return cloud;
+	}
+
+	pcl::PointCloud<pcl::PointXYZI>::Ptr pcl::KinectGrabber::convertInfraredDepthToPointXYZI( NUI_LOCKED_RECT* colorLockedRect, NUI_LOCKED_RECT* depthLockedRect )
+	{
+		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZI>() );
+
+		cloud->width = static_cast<uint32_t>( width );
+		cloud->height = static_cast<uint32_t>( height );
+		cloud->is_dense = false;
+
+		cloud->points.resize( cloud->height * cloud->width );
+
+		NUI_DEPTH_IMAGE_PIXEL* depthPixel = reinterpret_cast<NUI_DEPTH_IMAGE_PIXEL*>( depthLockedRect->pBits );
+		pcl::PointXYZI* pt = &cloud->points[0];
+		for( int y = 0; y < height; y++ ){
+			for( int x = 0; x < width; x++, pt++ ){
+				pcl::PointXYZI point;
+
+				NUI_DEPTH_IMAGE_POINT depthPoint;
+				depthPoint.x = x;
+				depthPoint.y = y;
+				depthPoint.depth = depthPixel[y * width + x].depth;
+
+				// Setting PointCloud I
+				point.intensity = static_cast<float>( colorLockedRect->pBits[y * width + x] );
 
 				// Coordinate Mapping Depth to Real Space, and Setting PointCloud XYZ
 				Vector4 skeletonPoint;

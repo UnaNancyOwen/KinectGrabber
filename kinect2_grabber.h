@@ -17,6 +17,7 @@
 namespace pcl
 {
 	struct pcl::PointXYZ;
+	struct pcl::PointXYZI;
 	struct pcl::PointXYZRGB;
 	struct pcl::PointXYZRGBA;
 	template <typename T> class pcl::PointCloud;
@@ -42,15 +43,18 @@ namespace pcl
 			virtual float getFramesPerSecond() const;
 
 			typedef void ( signal_Kinect2_PointXYZ )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZ>>& );
+			typedef void ( signal_Kinect2_PointXYZI )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZI>>& );
 			typedef void ( signal_Kinect2_PointXYZRGB )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGB>>& );
 			typedef void ( signal_Kinect2_PointXYZRGBA )( const boost::shared_ptr<const pcl::PointCloud<pcl::PointXYZRGBA>>& );
 
 		protected:
 			boost::signals2::signal<signal_Kinect2_PointXYZ>* signal_PointXYZ;
+			boost::signals2::signal<signal_Kinect2_PointXYZI>* signal_PointXYZI;
 			boost::signals2::signal<signal_Kinect2_PointXYZRGB>* signal_PointXYZRGB;
 			boost::signals2::signal<signal_Kinect2_PointXYZRGBA>* signal_PointXYZRGBA;
 
 			pcl::PointCloud<pcl::PointXYZ>::Ptr convertDepthToPointXYZ( UINT16* depthBuffer );
+			pcl::PointCloud<pcl::PointXYZI>::Ptr convertInfraredDepthToPointXYZI( UINT16* infraredBuffer, UINT16* depthBuffer );
 			pcl::PointCloud<pcl::PointXYZRGB>::Ptr convertRGBDepthToPointXYZRGB( RGBQUAD* colorBuffer, UINT16* depthBuffer );
 			pcl::PointCloud<pcl::PointXYZRGBA>::Ptr convertRGBADepthToPointXYZRGBA( RGBQUAD* colorBuffer, UINT16* depthBuffer );
 
@@ -69,6 +73,8 @@ namespace pcl
 			IColorFrameReader* colorReader;
 			IDepthFrameSource* depthSource;
 			IDepthFrameReader* depthReader;
+			IInfraredFrameSource* infraredSource;
+			IInfraredFrameReader* infraredReader;
 
 			int colorWidth;
 			int colorHeight;
@@ -77,6 +83,10 @@ namespace pcl
 			int depthWidth;
 			int depthHeight;
 			std::vector<UINT16> depthBuffer;
+
+			int infraredWidth;
+			int infraredHeight;
+			std::vector<UINT16> infraredBuffer;
 	};
 
 	pcl::Kinect2Grabber::Kinect2Grabber()
@@ -86,6 +96,8 @@ namespace pcl
 		, colorReader( nullptr )
 		, depthSource( nullptr )
 		, depthReader( nullptr )
+		, infraredSource( nullptr )
+		, infraredReader( nullptr )
 		, result( S_OK )
 		, colorWidth( 1920 )
 		, colorHeight( 1080 )
@@ -93,9 +105,13 @@ namespace pcl
 		, depthWidth( 512 )
 		, depthHeight( 424 )
 		, depthBuffer()
+		, infraredWidth( 512 )
+		, infraredHeight( 424 )
+		, infraredBuffer()
 		, running( false )
 		, quit( false )
 		, signal_PointXYZ( nullptr )
+		, signal_PointXYZI( nullptr )
 		, signal_PointXYZRGB( nullptr )
 		, signal_PointXYZRGBA( nullptr )
 	{
@@ -127,6 +143,12 @@ namespace pcl
 		result = sensor->get_DepthFrameSource( &depthSource );
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : IKinectSensor::get_DepthFrameSource()" );
+		}
+
+		// Retrieved Infrared Frame Source
+		result = sensor->get_InfraredFrameSource( &infraredSource );
+		if( FAILED( result ) ){
+			throw std::exception( "Exception : IKinectSensor::get_InfraredFrameSource()" );
 		}
 
 		// Retrieved Color Frame Size
@@ -173,7 +195,30 @@ namespace pcl
 		// To Reserve Depth Frame Buffer
 		depthBuffer.resize( depthWidth * depthHeight );
 
+		// Retrieved Infrared Frame Size
+		IFrameDescription* infraredDescription;
+		result = infraredSource->get_FrameDescription( &infraredDescription );
+		if( FAILED( result ) ){
+			throw std::exception( "Exception : IInfraredFrameSource::get_FrameDescription()" );
+		}
+
+		result = infraredDescription->get_Width( &infraredWidth ); // 512
+		if( FAILED( result ) ){
+			throw std::exception( "Exception : IFrameDescription::get_Width()" );
+		}
+
+		result = infraredDescription->get_Height( &infraredHeight ); // 424
+		if( FAILED( result ) ){
+			throw std::exception( "Exception : IFrameDescription::get_Height()" );
+		}
+
+		SafeRelease( infraredDescription );
+
+		// To Reserve Infrared Frame Buffer
+		infraredBuffer.resize( infraredWidth * infraredHeight );
+
 		signal_PointXYZ = createSignal<signal_Kinect2_PointXYZ>();
+		signal_PointXYZI = createSignal<signal_Kinect2_PointXYZI>();
 		signal_PointXYZRGB = createSignal<signal_Kinect2_PointXYZRGB>();
 		signal_PointXYZRGBA = createSignal<signal_Kinect2_PointXYZRGBA>();
 	}
@@ -183,6 +228,7 @@ namespace pcl
 		stop();
 
 		disconnect_all_slots<signal_Kinect2_PointXYZ>();
+		disconnect_all_slots<signal_Kinect2_PointXYZI>();
 		disconnect_all_slots<signal_Kinect2_PointXYZRGB>();
 		disconnect_all_slots<signal_Kinect2_PointXYZRGBA>();
 
@@ -196,6 +242,8 @@ namespace pcl
 		SafeRelease( colorReader );
 		SafeRelease( depthSource );
 		SafeRelease( depthReader );
+		SafeRelease( infraredSource );
+		SafeRelease( infraredReader );
 
 		thread.join();
 	}
@@ -212,6 +260,12 @@ namespace pcl
 		result = depthSource->OpenReader( &depthReader );
 		if( FAILED( result ) ){
 			throw std::exception( "Exception : IDepthFrameSource::OpenReader()" );
+		}
+
+		// Open Infrared Frame Reader
+		result = infraredSource->OpenReader( &infraredReader );
+		if( FAILED( result ) ){
+			throw std::exception( "Exception : IInfraredFrameSource::OpenReader()" );
 		}
 
 		running = true;
@@ -275,10 +329,26 @@ namespace pcl
 			}
 			SafeRelease( depthFrame );
 
+			// Acquire Latest Infrared Frame
+			IInfraredFrame* infraredFrame = nullptr;
+			result = infraredReader->AcquireLatestFrame( &infraredFrame );
+			if( SUCCEEDED( result ) ){
+				// Retrieved Infrared Data
+				result = infraredFrame->CopyFrameDataToArray( infraredBuffer.size(), &infraredBuffer[0] );
+				if( FAILED( result ) ){
+					throw std::exception( "Exception : IInfraredFrame::CopyFrameDataToArray()" );
+				}
+			}
+			SafeRelease( infraredFrame );
+
 			lock.unlock();
 
 			if( signal_PointXYZ->num_slots() > 0 ) {
 				signal_PointXYZ->operator()( convertDepthToPointXYZ( &depthBuffer[0] ) );
+			}
+
+			if( signal_PointXYZI->num_slots() > 0 ) {
+				signal_PointXYZI->operator()( convertInfraredDepthToPointXYZI( &infraredBuffer[0], &depthBuffer[0] ) );
 			}
 
 			if( signal_PointXYZRGB->num_slots() > 0 ) {
@@ -308,6 +378,41 @@ namespace pcl
 
 				DepthSpacePoint depthSpacePoint = { static_cast<float>( x ), static_cast<float>( y ) };
 				UINT16 depth = depthBuffer[y * depthWidth + x];
+
+				// Coordinate Mapping Depth to Camera Space, and Setting PointCloud XYZ
+				CameraSpacePoint cameraSpacePoint = { 0.0f, 0.0f, 0.0f };
+				mapper->MapDepthPointToCameraSpace( depthSpacePoint, depth, &cameraSpacePoint );
+				point.x = cameraSpacePoint.X;
+				point.y = cameraSpacePoint.Y;
+				point.z = cameraSpacePoint.Z;
+
+				*pt = point;
+			}
+		}
+
+		return cloud;
+	}
+
+	pcl::PointCloud<pcl::PointXYZI>::Ptr pcl::Kinect2Grabber::convertInfraredDepthToPointXYZI( UINT16* infraredBuffer, UINT16* depthBuffer )
+	{
+		pcl::PointCloud<pcl::PointXYZI>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZI>() );
+
+		cloud->width = static_cast<uint32_t>( depthWidth );
+		cloud->height = static_cast<uint32_t>( depthHeight );
+		cloud->is_dense = false;
+
+		cloud->points.resize( cloud->height * cloud->width );
+
+		pcl::PointXYZI* pt = &cloud->points[0];
+		for( int y = 0; y < depthHeight; y++ ){
+			for( int x = 0; x < depthWidth; x++, pt++ ){
+				pcl::PointXYZI point;
+
+				DepthSpacePoint depthSpacePoint = { static_cast<float>( x ), static_cast<float>( y ) };
+				UINT16 depth = depthBuffer[y * depthWidth + x];
+
+				// Setting PointCloud Intensity
+				point.intensity = static_cast<float>( infraredBuffer[y * depthWidth + x] );
 
 				// Coordinate Mapping Depth to Camera Space, and Setting PointCloud XYZ
 				CameraSpacePoint cameraSpacePoint = { 0.0f, 0.0f, 0.0f };

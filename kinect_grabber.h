@@ -125,7 +125,7 @@ namespace pcl
 		signal_PointXYZRGBA = createSignal<signal_Kinect_PointXYZRGBA>();
 	}
 
-	pcl::KinectGrabber::~KinectGrabber() throw( )
+	pcl::KinectGrabber::~KinectGrabber() throw()
 	{
 		stop();
 
@@ -180,11 +180,13 @@ namespace pcl
 		lock.unlock();
 	}
 
-	std::string pcl::KinectGrabber::getName() const{
+	std::string pcl::KinectGrabber::getName() const
+	{
 		return std::string( "KinectGrabber" );
 	}
 
-	float pcl::KinectGrabber::getFramesPerSecond() const {
+	float pcl::KinectGrabber::getFramesPerSecond() const
+	{
 		return 30.0f;
 	}
 
@@ -228,19 +230,19 @@ namespace pcl
 
 			lock.unlock();
 
-			if( signal_PointXYZ->num_slots() > 0 ) {
+			if( signal_PointXYZ->num_slots() > 0 ){
 				signal_PointXYZ->operator()( convertDepthToPointXYZ( &depthLockedRect ) );
 			}
 
-			if( signal_PointXYZI->num_slots() > 0 ) {
+			if( signal_PointXYZI->num_slots() > 0 ){
 				signal_PointXYZI->operator()( convertInfraredDepthToPointXYZI( &colorLockedRect, &depthLockedRect ) );
 			}
 
-			if( signal_PointXYZRGB->num_slots() > 0 ) {
+			if( signal_PointXYZRGB->num_slots() > 0 ){
 				signal_PointXYZRGB->operator()( convertRGBDepthToPointXYZRGB( &colorLockedRect, &depthLockedRect ) );
 			}
 
-			if( signal_PointXYZRGBA->num_slots() > 0 ) {
+			if( signal_PointXYZRGBA->num_slots() > 0 ){
 				signal_PointXYZRGBA->operator()( convertRGBADepthToPointXYZRGBA( &colorLockedRect, &depthLockedRect ) );
 			}
 		}

@@ -223,7 +223,7 @@ namespace pcl
 		signal_PointXYZRGBA = createSignal<signal_Kinect2_PointXYZRGBA>();
 	}
 
-	pcl::Kinect2Grabber::~Kinect2Grabber() throw( )
+	pcl::Kinect2Grabber::~Kinect2Grabber() throw()
 	{
 		stop();
 
@@ -292,11 +292,13 @@ namespace pcl
 		lock.unlock();
 	}
 
-	std::string pcl::Kinect2Grabber::getName() const{
+	std::string pcl::Kinect2Grabber::getName() const
+	{
 		return std::string( "Kinect2Grabber" );
 	}
 
-	float pcl::Kinect2Grabber::getFramesPerSecond() const {
+	float pcl::Kinect2Grabber::getFramesPerSecond() const
+	{
 		return 30.0f;
 	}
 
@@ -343,19 +345,19 @@ namespace pcl
 
 			lock.unlock();
 
-			if( signal_PointXYZ->num_slots() > 0 ) {
+			if( signal_PointXYZ->num_slots() > 0 ){
 				signal_PointXYZ->operator()( convertDepthToPointXYZ( &depthBuffer[0] ) );
 			}
 
-			if( signal_PointXYZI->num_slots() > 0 ) {
+			if( signal_PointXYZI->num_slots() > 0 ){
 				signal_PointXYZI->operator()( convertInfraredDepthToPointXYZI( &infraredBuffer[0], &depthBuffer[0] ) );
 			}
 
-			if( signal_PointXYZRGB->num_slots() > 0 ) {
+			if( signal_PointXYZRGB->num_slots() > 0 ){
 				signal_PointXYZRGB->operator()( convertRGBDepthToPointXYZRGB( &colorBuffer[0], &depthBuffer[0] ) );
 			}
 
-			if( signal_PointXYZRGBA->num_slots() > 0 ) {
+			if( signal_PointXYZRGBA->num_slots() > 0 ){
 				signal_PointXYZRGBA->operator()( convertRGBADepthToPointXYZRGBA( &colorBuffer[0], &depthBuffer[0] ) );
 			}
 		}

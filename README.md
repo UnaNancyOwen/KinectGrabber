@@ -6,6 +6,11 @@
 KinectGrabber is Grabber of PCL(Point Cloud Library) to retrieve the point cloud data from Kinect v1 using Kinect for Windows SDK v1.x.  
 This Grabber only depend on Kinect for Windows SDK v1.x.  
 
+KinectGrabber support the following pcl::PointType.  
+* pcl::PointXYZ
+* pcl::PointXYZI
+* pcl::PointXYZRGB
+* pcl::PointXYZRGBA
 
 Environment
 -----------

@@ -15,13 +15,14 @@ Kinect2Grabber support the following pcl::PointType.
 
 Environment
 -----------
-* Point Cloud Library v1.7.2
+* Point Cloud Library v1.8.0
 * Kinect for Windows SDK v2.0
-* Visual Studio 2013 Express for Windows Desktop
+* Visual Studio Community 2015
+* CMake 3.5.0
 
 <sup>You can download PreBuild Binary of PCL from the following page.</sup>  
-<sup>Building Point Cloud Library with Visual Studio 2013 | Summary?Blog</sup>  
-<sup><http://unanancyowen.com/?p=712#Download></sup>  
+<sup>Point Cloud Library 1.8.0 RC1 has been released | Summary?Blog</sup>  
+<sup><http://unanancyowen.com/?p=1794&lang=en></sup>  
 
 
 License

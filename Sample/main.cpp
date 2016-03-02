@@ -5,7 +5,6 @@
 
 #include "kinect2_grabber.h"
 #include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/io/pcd_io.h>
 
 typedef pcl::PointXYZRGBA PointType;
 

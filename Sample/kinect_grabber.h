@@ -134,11 +134,11 @@ namespace pcl
         disconnect_all_slots<signal_Kinect_PointXYZRGB>();
         disconnect_all_slots<signal_Kinect_PointXYZRGBA>();
 
+        thread.join();
+
         // End Processing
         sensor->NuiShutdown();
         mapper->Release();
-
-        thread.join();
     }
 
     void pcl::KinectGrabber::start()

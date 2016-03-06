@@ -232,6 +232,8 @@ namespace pcl
         disconnect_all_slots<signal_Kinect2_PointXYZRGB>();
         disconnect_all_slots<signal_Kinect2_PointXYZRGBA>();
 
+        thread.join();
+
         // End Processing
         if( sensor ){
             sensor->Close();
@@ -244,8 +246,6 @@ namespace pcl
         SafeRelease( depthReader );
         SafeRelease( infraredSource );
         SafeRelease( infraredReader );
-
-        thread.join();
     }
 
     void pcl::Kinect2Grabber::start()

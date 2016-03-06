@@ -27,7 +27,7 @@ int main( int argc, char* argv[] )
         };
 
     // Kinect2Grabber
-    pcl::Grabber* grabber = new pcl::Kinect2Grabber();
+    boost::shared_ptr<pcl::Grabber> grabber = boost::make_shared<pcl::Kinect2Grabber>();
 
     // Register Callback Function
     boost::signals2::connection connection = grabber->registerCallback( function );

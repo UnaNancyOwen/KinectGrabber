@@ -6,7 +6,7 @@
 #include "kinect_grabber.h"
 #include <pcl/visualization/pcl_visualizer.h>
 
-typedef pcl::PointXYZRGBA PointType;
+typedef pcl::PointXYZRGB PointType;
 
 int main( int argc, char* argv[] )
 {

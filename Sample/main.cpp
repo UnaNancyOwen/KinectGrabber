@@ -54,6 +54,11 @@ int main( int argc, char* argv[] )
 
     // Stop Grabber
     grabber->stop();
+    
+    // Disconnect Callback Function
+    if( connection.connected() ){
+        connection.disconnect();
+    }
 
     return 0;
 }

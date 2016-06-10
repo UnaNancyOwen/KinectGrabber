@@ -3,6 +3,7 @@ set( CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}" ${CMAKE_MODULE_PATH} )
 
 project( sample )
 add_executable( sample kinect2_grabber.h main.cpp )
+set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT "sample" )
 
 # Find Packages
 find_package( PCL 1.8 REQUIRED )

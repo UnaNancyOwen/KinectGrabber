@@ -23,7 +23,10 @@ int main( int argc, char* argv[] )
     boost::function<void( const pcl::PointCloud<PointType>::ConstPtr& )> function =
         [&cloud, &mutex]( const pcl::PointCloud<PointType>::ConstPtr& ptr ){
             boost::mutex::scoped_lock lock( mutex );
-            cloud = ptr;
+
+            /* Point Cloud Processing */
+
+            cloud = ptr->makeShared();
         };
 
     // Kinect2Grabber
@@ -40,14 +43,10 @@ int main( int argc, char* argv[] )
         viewer->spinOnce();
 
         boost::mutex::scoped_try_lock lock( mutex );
-        if( cloud && lock.owns_lock() ){
-            if( cloud->size() != 0 ){
-                /* Processing to Point Cloud */
-
-                // Update Point Cloud
-                if( !viewer->updatePointCloud( cloud, "cloud" ) ){
-                    viewer->addPointCloud( cloud, "cloud" );
-                }
+        if( lock.owns_lock() && cloud ){
+            // Update Point Cloud
+            if( !viewer->updatePointCloud( cloud, "cloud" ) ){
+                viewer->addPointCloud( cloud, "cloud" );
             }
         }
     }

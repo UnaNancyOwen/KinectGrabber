@@ -59,10 +59,5 @@ int main( int argc, char* argv[] )
         connection.disconnect();
     }
 
-    // Disconnect Callback Function
-    if( connection.connected() ){
-        connection.disconnect();
-    }
-
     return 0;
 }
